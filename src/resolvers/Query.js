@@ -32,9 +32,11 @@ const Query = {
     return prisma.query.posts(opArgs, info)
 
   },
-  comments(parent, args, { db }, info) {
-    return db.comments
+
+  comments(parent, args, { prisma }, info) {
+    return prisma.query.comments(null, info)
   },
+
   me() {
     return {
       id: '123098',
