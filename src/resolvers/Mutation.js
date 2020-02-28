@@ -1,16 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-
-// const dummy = async () => {
-//   const email = 'lasse@gmail.com'
-//   const password = 'red12345'
-
-//   const hashedPassword = '$2a$10$Ed7Ca7v8mULi94hDyPnXuOZqCbRqk61ay.P8fB4D.1cUNXWpMNcXS'
-
-//   const isMatch = await bcrypt.compare(password, hashedPassword)
-//   console.log(isMatch)
-// }
-// dummy()
+import getUserId from '../utils/getUserId'
 
 const Mutation = {
   async createUser(parent, args, { prisma }, info) {
@@ -72,7 +62,9 @@ const Mutation = {
     }, info)
   },
 
-  async createPost(parent, args, { prisma }, info) {
+  async createPost(parent, args, { prisma, request }, info) {
+    const userId = getUserId(request)
+    // get header value, parse out the token, verify ...
     return prisma.mutation.createPost({
       data: {
         title: args.data.title,
@@ -80,12 +72,29 @@ const Mutation = {
         published: args.data.published,
         author: {
           connect: {
-            id: args.data.author
+            id: userId
           }
         }
       }
     }, info)
   },
+
+  // createPost(parent, args, { prisma, request }, info) {
+  //   const userId = getUserId(request)
+
+  //   return prisma.mutation.createPost({
+  //     data: {
+  //       title: args.data.title,
+  //       body: args.data.body,
+  //       published: args.data.published,
+  //       author: {
+  //         connect: {
+  //           id: userId
+  //         }
+  //       }
+  //     }
+  //   }, info)
+  // },
 
   deletePost(parent, args, { prisma }, info) {
     return prisma.mutation.deletePost({
