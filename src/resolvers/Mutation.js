@@ -1,6 +1,19 @@
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
-// Take in password -> validate password -> Hash password -> generate token
+// Take in password -> validate password -> Hash password -> generate auth token
+// JSON web token (JWT) 
+
+// const token = jwt.sign({ id: 46 }, 'mysecret')
+// // const token = jwt.sign({ id: 46 }, 'mybestguess')
+// console.log('token: ', token)
+
+// const decoded = jwt.decode(token)
+// console.log(decoded)
+
+// const decoded2 = jwt.verify(token, 'mysecret')
+// console.log(decoded2)
+
 const Mutation = {
   async createUser(parent, args, { prisma }, info) {
     if (args.data.password.length < 8) {
@@ -8,13 +21,17 @@ const Mutation = {
     }
 
     const password = await bcrypt.hash(args.data.password, 10)
-
-    return prisma.mutation.createUser({
+    const user = await prisma.mutation.createUser({
       data: {
         ...args.data,
         password
       }
-    }, info)
+    })
+
+    return {
+      user,
+      token: jwt.sign({ userId: user.id }, 'thisisasecret')
+    }
   },
 
   async deleteUser(parent, args, { prisma }, info) {
