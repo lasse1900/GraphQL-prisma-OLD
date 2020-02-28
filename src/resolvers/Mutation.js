@@ -1,18 +1,16 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-// Take in password -> validate password -> Hash password -> generate auth token
-// JSON web token (JWT) 
+// const dummy = async () => {
+//   const email = 'lasse@gmail.com'
+//   const password = 'red12345'
 
-// const token = jwt.sign({ id: 46 }, 'mysecret')
-// // const token = jwt.sign({ id: 46 }, 'mybestguess')
-// console.log('token: ', token)
+//   const hashedPassword = '$2a$10$Ed7Ca7v8mULi94hDyPnXuOZqCbRqk61ay.P8fB4D.1cUNXWpMNcXS'
 
-// const decoded = jwt.decode(token)
-// console.log(decoded)
-
-// const decoded2 = jwt.verify(token, 'mysecret')
-// console.log(decoded2)
+//   const isMatch = await bcrypt.compare(password, hashedPassword)
+//   console.log(isMatch)
+// }
+// dummy()
 
 const Mutation = {
   async createUser(parent, args, { prisma }, info) {
@@ -27,6 +25,29 @@ const Mutation = {
         password
       }
     })
+
+    return {
+      user,
+      token: jwt.sign({ userId: user.id }, 'thisisasecret')
+    }
+  },
+
+  async login(parent, args, { prisma }, info) {
+    const user = await prisma.query.user({
+      where: {
+        email: args.data.email
+      }
+    })
+
+    if (!user) {
+      throw new Error('Unable to login')
+    }
+
+    const isMatch = await bcrypt.compare(args.data.password, user.password)
+
+    if (!isMatch) {
+      throw new Error('Unable to login')
+    }
 
     return {
       user,
